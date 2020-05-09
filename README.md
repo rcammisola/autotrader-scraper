@@ -35,15 +35,3 @@ it works, however, doesn't know when to stop. Stop it yourself after all the car
 the search results have been scraped (check by number of lines in the output file).
 Also keep in mind that autotrader only lets you access top 1000 results from a 
 search anyway.
-
-* `srv.py`  **DEPRECATED**, because it's a very hardcore way to do what I think should 
-be casual scraping. It didn't solve the problem it was meant to (time away 
-requests so the site doesn't get wise to us scraping). Turns out, their pretty 
-much only criterion for IP bans is hits per units of time, not any patterns.
-The only real way to get around this is a proxy list, which flies right out of 
-the territory of casual scraping. Feel free to implement one yourself if you 
-need the ads so badly. 
-
-* client.py **DEPRECATED** really, a simple listmaker ought to be enough for 
-everyone™
-
