@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
 # Will take a list of autotrader ad page IDs and scrape useful data from them,
-# outputting in .csv format. The scraper function itself can be found in ff1.py
+# outputting in .csv format. The scraper function itself can be found in scraping.py
 
-# Takes three arugments, in order:
+# Takes two arguments, in order:
 # 1. an input file name (one line per ad url)
 # 2. an output file name (appends by default)
 
@@ -12,7 +12,7 @@ import csv
 import os
 import sys
 
-import ff1
+from autotrader_scraper import scraping
 
 with open(str(sys.argv[1]), 'r') as i_file:  # url file
     url_list = i_file.readlines()
@@ -35,9 +35,9 @@ with open(str(sys.argv[2]), mode) as o_file:
 
     if mode == 'w':
         cwriter.writeheader()
-    for u in url_list:
-        tmp = ff1.scraper(u)
-        cwriter.writerow(tmp)
+    for url in url_list:
+        row = scraping.ad_scraper(url)
+        cwriter.writerow(row)
         i += 1
         if i % 10 == 0:
             print(i)

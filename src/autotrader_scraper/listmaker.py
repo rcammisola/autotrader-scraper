@@ -6,7 +6,7 @@
 import os
 import sys
 
-import ff1
+from autotrader_scraper import scraping
 
 base_url = sys.argv[1]
 out_fname = sys.argv[2]
@@ -17,7 +17,8 @@ if not os.path.isfile(out_fname):
 
 page_count = 1
 while True:
-    results = ff1.search_result_scraper(base_url + '&page=' + str(page_count))
+    url = f"{base_url}&page={page_count}"
+    results = scraping.search_result_scraper(url)
     if len(results) > 0:
         with open(out_fname, 'a') as fcon:
             for r in results:

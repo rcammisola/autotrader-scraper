@@ -1,17 +1,15 @@
-#!/usr/bin/python3
-
 import json
-import math
 import re
+from typing import Text, Dict, Any, List
 
 import requests
 from lxml import html
 
 
-def scraper(url):
-    urlid = re.findall('[0-9]{11,}', url)[0]
+def ad_scraper(url: Text) -> Dict[Text, Any]:
+    url_id = re.findall('[0-9]{11,}', url)[0]
     base_url = 'https://www.autotrader.co.uk/json/fpa/initial/'
-    response = requests.get(base_url + str(urlid), timeout=5)
+    response = requests.get(f"{base_url}{url_id}", timeout=5)
 
     ret = dict()
 
@@ -30,11 +28,11 @@ def scraper(url):
     for nm in set(d['vehicle'].keys()).intersection(keys_vehicle):
         ret[nm] = d['vehicle'][nm]
 
-    keys_keyFacts = {
+    keys_spec = {
         'engine-size', 'manufactured-year', 'body-type', 'mileage',
         'transmission', 'fuel-type', 'doors', 'seats'
     }
-    for nm in set(d['vehicle']['keyFacts'].keys()).intersection(keys_keyFacts):
+    for nm in set(d['vehicle']['keyFacts'].keys()).intersection(keys_spec):
         ret[nm] = d['vehicle']['keyFacts'][nm]
 
     if 'doors' in ret.keys():
@@ -78,40 +76,8 @@ def scraper(url):
     return ret
 
 
-def tree_getter(url):
-    try:
-        page = requests.get(url)
-    except requests.exceptions.RequestException:
-        return -2
-    if page.status_code == 204:
-        return -1
-    return html.fromstring(page.content)
-
-
-def search_result_scraper(url):
+def search_result_scraper(url: Text) -> List:
     response = requests.get(url, timeout=5)
     tree = html.fromstring(response.content.decode('utf-8'))
     res = set(tree.xpath('//a[contains(@class, "listing-fpa-link")]/@href'))
     return list(res)
-
-
-def c_scraper(url):
-    tree = tree_getter(url)
-    if isinstance(tree, int):
-        return tree
-    try:
-        print()
-        expr = '//h1[@class="search-form__count js-results-count"]/text()'
-        car_count = int(
-            re.sub(
-                '[^0-9]',
-                '',
-                tree.xpath(expr)[0]
-            )
-        )
-        page_count = int(math.ceil(car_count / 10))
-        print(page_count)
-    except IndexError:
-        print('IndexError')
-        return 0
-    return page_count
