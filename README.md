@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/musab-k/autotrader-scraper.svg?branch=master)](https://travis-ci.com/musab-k/autotrader-scraper)
+
 # autotrader-scraper
 Autotrader.co.uk data scraper.
 
