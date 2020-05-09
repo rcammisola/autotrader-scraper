@@ -1,9 +1,10 @@
 #!/usr/bin/python3
-import time
 import sys
+import time
+
 A_PATH = ''
 sys.path.append(A_PATH)
-import client
+import client  # noqa: E402
 
 PORT = 9500
 HOST = 'localhost'

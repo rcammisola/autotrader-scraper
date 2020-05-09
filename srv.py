@@ -1,18 +1,15 @@
 #!/usr/bin/python3
 """ going to add separate work lists"""
 
-import socket
-import threading
-import socketserver
-import time
-import random
 import pickle
-import requests
-import re
-from lxml import html
-import ff1
+import random
+import socketserver
 import sqlite3
 import sys
+import threading
+import time
+
+import ff1
 
 global a_list, bc_list, r_list
 a_list, bc_list, r_list = [], [], []
@@ -141,9 +138,10 @@ def do_c(job):
 
 def add_from_database():
     counter = 0
+    query = 'SELECT url FROM cars WHERE make IS NULL AND first_gone IS NULL'
     with sqlite3.connect(db_filename) as conn:
         c = conn.cursor()
-        c.execute('SELECT url FROM cars WHERE make IS NULL AND first_gone IS NULL')
+        c.execute(query)
         alist = c.fetchall()
     from_database = [item for sublist in alist for item in sublist]
     for element in from_database:
