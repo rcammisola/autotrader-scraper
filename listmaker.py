@@ -1,11 +1,10 @@
 # Listmaker
 # Usage:
-# ./listmaker.py https://www.autotrader.co.uk/car-search?advert... url_list.txt 
+# ./listmaker.py https://www.autotrader.co.uk/car-search?advert... url_list.txt
 # if file exists, we append
 
-import sys
-import csv
 import os
+import sys
 
 import ff1
 
@@ -15,8 +14,8 @@ out_fname = sys.argv[2]
 if not os.path.isfile(out_fname):
     z = open(out_fname, 'w')
     z.close()
-    
-page_count = 1 
+
+page_count = 1
 while True:
     results = ff1.search_result_scraper(base_url + '&page=' + str(page_count))
     if len(results) > 0:
