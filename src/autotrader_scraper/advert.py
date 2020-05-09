@@ -10,12 +10,7 @@ URL = Text
 class Advert:
     def __init__(self, url: URL):
         self.url = url
-        self._contents = None
-
-    @property
-    def contents(self):
-        self._contents = self._contents if self._contents else self.scrape()
-        return self._contents
+        self.contents = self.scrape()
 
     def scrape(self) -> Dict[Text, Any]:
         url_id = re.findall('[0-9]{11,}', self.url)[0]

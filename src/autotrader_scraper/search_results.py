@@ -13,12 +13,12 @@ class SearchResults:
         self.base_url = base_url
         self.max_results = max_results
         self.max_pages = max_pages
-        self._results = None
+        self._pages = None
 
     @property
-    def results(self) -> List[URL]:
-        if self._results:
-            return self._results
+    def pages(self) -> List[URL]:
+        if self._pages:
+            return self._pages
 
         results = []
         page_count = 1
@@ -34,8 +34,8 @@ class SearchResults:
             else:
                 page_count += 1
 
-        self._results = results[:self.max_results]
-        return self._results
+        self._pages = results[:self.max_results]
+        return self._pages
 
     @staticmethod
     def scrape(url: Text) -> List[URL]:
