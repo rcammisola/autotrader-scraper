@@ -1,10 +1,12 @@
+import collections
 import json
 import re
-from typing import Text, Any, Dict
+from typing import Text, Dict, Union, Mapping
 
 import requests
 
 URL = Text
+AtomicTypes = Union[int, float, Text, bool]
 
 
 class Advert:
@@ -12,74 +14,41 @@ class Advert:
         self.url = url
         self.contents = self.scrape()
 
-    def scrape(self) -> Dict[Text, Any]:
+    def __repr__(self):
+        return json.dumps(self.contents)
+
+    def scrape(self) -> Dict[Text, AtomicTypes]:
         url_id = re.findall('[0-9]{11,}', self.url)[0]
         base_url = 'https://www.autotrader.co.uk/json/fpa/initial/'
-        response = requests.get(f"{base_url}{url_id}", timeout=5)
+        request_url = f"{base_url}{url_id}"
+        response = requests.get(request_url, timeout=5)
 
-        ret = dict()
-
-        ret['url'] = self.url
-        ret['status_code'] = response.status_code
         if response.status_code != 200:
-            return ret
+            raise ValueError(f"Unable to retrieve ad from: {request_url}")
 
-        ret['raw_response'] = response.content.decode('utf-8')
+        nested_properties = json.loads(response.content.decode('utf-8'))
+        flattened_properties = flatten_dict(nested_properties)
 
-        d = json.loads(response.content.decode('utf-8'))
+        keys_to_drop = [
+            "advert_imageUrls",
+            "advert_images",
+            "pageData_metadata"
+        ]
+        for key in keys_to_drop:
+            flattened_properties.pop(key)
 
-        keys_vehicle = {
-            'make', 'model', 'trim', 'condition', 'tax', 'co2Emissions'
-        }
-        for nm in set(d['vehicle'].keys()).intersection(keys_vehicle):
-            ret[nm] = d['vehicle'][nm]
+        return flattened_properties
 
-        keys_spec = {
-            'engine-size', 'manufactured-year', 'body-type', 'mileage',
-            'transmission', 'fuel-type', 'doors', 'seats'
-        }
-        for nm in set(d['vehicle']['keyFacts'].keys()).intersection(
-                keys_spec):
-            ret[nm] = d['vehicle']['keyFacts'][nm]
 
-        if 'doors' in ret.keys():
-            match = re.search(r'\d+', ret['doors'])
-            if match:
-                ret['doors'] = match[0]
-
-        if 'seats' in ret.keys():
-            match = re.search(r'\d+', ret['seats'])
-            if match:
-                ret['seats'] = match[0]
-
-        if 'manufactured-year' in ret.keys():
-            match = re.search(r'\d{4}', ret['manufactured-year'])
-            if match:
-                ret['manufactured-year'] = match[0]
-
-        if 'mileage' in ret.keys():
-            ret['mileage'] = re.sub(r'[^\d\.]', '', ret['mileage'])
-
-        if 'co2Emissions' in ret.keys():
-            ret['co2Emissions'] = re.sub(r'[^\d\.]', '',
-                                         ret['co2Emissions'])
-
-        keys_advert = {'price', 'description'}
-        for nm in set(d['advert'].keys()).intersection(keys_advert):
-            ret[nm] = d['advert'][nm]
-
-        if 'price' in ret.keys():
-            ret['price'] = re.sub(r'[^\d]', '', ret['price'])
-
-        keys_seller = {'isTradeSeller', 'townAndDistance', 'emailAddress'}
-        for nm in set(d['seller'].keys()).intersection(keys_seller):
-            ret[nm] = d['seller'][nm]
-
-        for nm in set(d['pageData']['tracking'].keys()).intersection(
-                keys_seller):
-            ret[nm] = d['pageData']['tracking'][nm]
-
-        for nm in list(ret.keys()):
-            ret[re.sub('-', '_', nm)] = ret.pop(nm)
-
-        return ret
+def flatten_dict(d: Mapping,
+                 parent_key: Text = '',
+                 sep: Text = '_') -> Dict[Text, AtomicTypes]:
+    """ From https://stackoverflow.com/a/6027615 """
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)

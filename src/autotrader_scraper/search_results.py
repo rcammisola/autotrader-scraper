@@ -24,6 +24,9 @@ class SearchResults:
         page_count = 1
         while True:
             url = f"{self.base_url}&page={page_count}"
+            if page_count % 10 == 0:
+                print(f"Scraping search page {page_count} / ...")
+
             urls_from_page = self.scrape(url)
             results += urls_from_page
 
