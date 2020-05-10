@@ -2,7 +2,7 @@
 name = "autotrader-scraper"
 version = "0.1.0"
 description = ""
-authors = ["Musab Khawaja <khawaja@arrival.com>"]
+authors = ["Musab K <musab-k>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
