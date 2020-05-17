@@ -1,21 +1,48 @@
 import collections
 import json
 import re
-from typing import Text, Dict, Union, Mapping
+from typing import Text, Dict, Union, Mapping, List
 
+import pandas as pd
 import requests
 
 URL = Text
 AtomicTypes = Union[int, float, Text, bool]
+AD_ID_PATTERN = r'([0-9]{15})'
+
+
+def get_ad_id_from_url(url: URL) -> Text:
+    return re.search(AD_ID_PATTERN, url)[0]
+
+
+def get_ads_from_search_results(ad_urls: List[URL],
+                                previous_ads: pd.DataFrame) -> pd.DataFrame:
+    results = pd.DataFrame()
+    for i, url in enumerate(ad_urls):
+        ad_id = get_ad_id_from_url(url)
+        if ad_id in previous_ads.index:
+            continue
+        ad = Advert(url)
+        df = pd.DataFrame(data=[ad.contents], index=[ad_id])
+        results = pd.concat([results, df])
+    print(f"Scraped {len(results)} new ads")
+    return results
 
 
 class Advert:
     def __init__(self, url: URL):
         self.url = url
-        self.contents = self.scrape()
+        self.id = get_ad_id_from_url(url)
+        self._contents = None
 
     def __repr__(self):
         return json.dumps(self.contents)
+
+    @property
+    def contents(self):
+        if not self._contents:
+            self._contents = self.scrape()
+        return self._contents
 
     def scrape(self) -> Dict[Text, AtomicTypes]:
         url_id = re.findall('[0-9]{11,}', self.url)[0]
@@ -36,6 +63,10 @@ class Advert:
         ]
         for key in keys_to_drop:
             flattened_properties.pop(key)
+
+        id_from_page = flattened_properties["pageData_tracking_ad_id"]
+        msg = f"ID on page ({id_from_page}) didn't match ID in URL ({self.id})"
+        assert id_from_page == self.id, msg
 
         return flattened_properties
 
