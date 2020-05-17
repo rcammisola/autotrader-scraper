@@ -31,6 +31,6 @@ def main(base_url: Text, output_file: Text):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--url", help="url of autotrader search page")
-    parser.add_argument("-o", "--output", help="path to output file")
+    parser.add_argument("-o", "--output", help="path to output parquet file")
     args = parser.parse_args()
     main(base_url=args.url, output_file=args.output)

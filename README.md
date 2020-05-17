@@ -14,5 +14,5 @@ poetry install
 
 Go to autotrader.co.uk, perform a search and copy the url. To run the script:
 ```shell script
-poetry run bin/scraper.py "$SEARCH_URL" "$PATH_TO_OUTPUTS_CSV"
+poetry run bin/scraper.py -u "$SEARCH_URL" -o "$PATH_TO_OUTPUTS_PARQUET_FILE"
 ```
