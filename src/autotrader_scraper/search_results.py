@@ -39,7 +39,7 @@ class SearchResults:
 
             page_count += 1
 
-        print(f"Found {len(ad_urls)} ad URLs "
+        print(f"Found {len(all_ad_urls)} ad URLs "
               f"from {page_count} search pages")
         return list(np.unique(all_ad_urls[:self.max_results]))
 

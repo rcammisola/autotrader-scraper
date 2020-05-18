@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "autotrader-scraper"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Musab K <musab-k>"]
 
@@ -18,6 +18,9 @@ pyarrow = "^0.17.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.7.9"
+matplotlib = "^3.2.1"
+seaborn = "^0.10.1"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
