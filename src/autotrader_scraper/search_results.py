@@ -45,8 +45,12 @@ class SearchResults:
 
     @staticmethod
     def scrape_urls_from_page(url: Text) -> List[URL]:
-        response = requests.get(url, timeout=5)
+        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        response = requests.get(url, timeout=5, headers=headers)
+
         tree = html.fromstring(response.content.decode('utf-8'))
+        # print(tree.xpath('//a[contains(@class, "listing-fpa-link")]/@href'))
         res = set(
-            tree.xpath('//a[contains(@class, "listing-fpa-link")]/@href'))
+            tree.xpath('//a[contains(@class, "listing-fpa-link")]/@href')
+        )
         return list(res)

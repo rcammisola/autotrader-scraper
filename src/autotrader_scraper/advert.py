@@ -3,8 +3,13 @@ import json
 import re
 from typing import Text, Dict, Union, Mapping, List
 
+
+from pprint import pprint
+
 import pandas as pd
 import requests
+
+from tqdm import tqdm
 
 URL = Text
 AtomicTypes = Union[int, float, Text, bool]
@@ -18,7 +23,7 @@ def get_ad_id_from_url(url: URL) -> Text:
 def get_ads_from_search_results(ad_urls: List[URL],
                                 previous_ads: pd.DataFrame) -> pd.DataFrame:
     results = pd.DataFrame()
-    for i, url in enumerate(ad_urls):
+    for url in tqdm(ad_urls):
         ad_id = get_ad_id_from_url(url)
         if ad_id in previous_ads.index:
             continue
@@ -34,6 +39,7 @@ class Advert:
         self.url = url
         self.id = get_ad_id_from_url(url)
         self._contents = None
+        self.base_url = 'https://www.autotrader.co.uk/json/fpa/initial/'
 
     def __repr__(self):
         return json.dumps(self.contents)
@@ -46,14 +52,10 @@ class Advert:
 
     def scrape(self) -> Dict[Text, AtomicTypes]:
         url_id = re.findall('[0-9]{11,}', self.url)[0]
-        base_url = 'https://www.autotrader.co.uk/json/fpa/initial/'
-        request_url = f"{base_url}{url_id}"
-        response = requests.get(request_url, timeout=5)
+        request_url = f"{self.base_url}{url_id}"
 
-        if response.status_code != 200:
-            raise ValueError(f"Unable to retrieve ad from: {request_url}")
+        nested_properties = self.make_request(request_url)
 
-        nested_properties = json.loads(response.content.decode('utf-8'))
         flattened_properties = flatten_dict(nested_properties)
 
         keys_to_drop = [
@@ -68,7 +70,37 @@ class Advert:
         msg = f"ID on page ({id_from_page}) didn't match ID in URL ({self.id})"
         assert id_from_page == self.id, msg
 
+        flattened_properties.update(
+            self.scrape_vehicle_technical_specs(flattened_properties["vehicle_derivativeId"])
+        )
+
         return flattened_properties
+
+    def scrape_vehicle_technical_specs(self, derivative_id):
+        technical_spec_url = f"https://www.autotrader.co.uk/json/taxonomy/technical-specification?derivative={derivative_id}"
+        result_dict = self.make_request(technical_spec_url)
+
+        performance_specs = [specs["specs"] for specs in result_dict["techSpecs"] if specs["specName"] == "Economy & performance"]
+        dimension_specs = [specs["specs"] for specs in result_dict["techSpecs"] if specs["specName"] == "Dimensions"]
+
+        technical_specs = {}
+        technical_specs.update(
+            {s["name"]: s["value"] for s in performance_specs[0]}
+        )
+        technical_specs.update(
+            {s["name"]: s["value"] for s in dimension_specs[0]}
+        )
+
+        return technical_specs
+
+    def make_request(self, request_url):
+        headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+        response = requests.get(request_url, timeout=5, headers=headers)
+
+        if response.status_code != 200:
+            raise ValueError(f"Unable to retrieve ad from: {request_url}")
+
+        return json.loads(response.content.decode('utf-8'))
 
 
 def flatten_dict(d: Mapping,

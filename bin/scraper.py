@@ -21,7 +21,7 @@ def main(base_url: Text, output_file: Text):
     if len(new_ads) > 0:
         results = pd.concat([previous_ads, new_ads])
         print("Writing output")
-        results.to_parquet(str(output_file))
+        results.to_csv(str(output_file))
     else:
         print("No new ads found")
 
