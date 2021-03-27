@@ -24,12 +24,15 @@ def get_ads_from_search_results(ad_urls: List[URL],
                                 previous_ads: pd.DataFrame) -> pd.DataFrame:
     results = pd.DataFrame()
     for url in tqdm(ad_urls):
-        ad_id = get_ad_id_from_url(url)
-        if ad_id in previous_ads.index:
-            continue
-        ad = Advert(url)
-        df = pd.DataFrame(data=[ad.contents], index=[ad_id])
-        results = pd.concat([results, df])
+        try:
+            ad_id = get_ad_id_from_url(url)
+            if ad_id in previous_ads.index:
+                continue
+            ad = Advert(url)
+            df = pd.DataFrame(data=[ad.contents], index=[ad_id])
+            results = pd.concat([results, df])
+        except ValueError as ve:
+            print(f"ERROR: {ve}")
     print(f"Scraped {len(results)} new ads")
     return results
 

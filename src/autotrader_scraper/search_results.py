@@ -9,7 +9,7 @@ URL = Text
 
 class SearchResults:
     def __init__(self, base_url: Text,
-                 max_results: int = 1000,
+                 max_results: int = 2000,
                  max_pages: int = 200):
         self.base_url = base_url
         self.max_results = max_results
